@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Test movies</string>
+    <string name="title_popular">Popular</string>
+    <string name="title_top_rated">top rated</string>
+    <string name="title_map">Mapa</string>
+    <string name="title_photos">Fotos</string>
+    <string name="select_photos">Seleccionar fotos</string>
+    <string name="upload_photos">Cargar fotos</string>
+    <string name="user_name">Pedro perez</string>
+    <string name="user_email">pedro.perez@gmail.com</string>
+    <string name="user_location">Bogota - Colombia</string>
+    <string name="general_error_title">Lo sentimos, ocurrió un error inesperado, por favor inténtalo más tarde.</string>
+    <string name="general_error_close">Cerrar</string>
+    <string name="general_error_retry">Reintentar</string>
+    <string name="general_error_oops">Oops!</string>
+    <string name="reload_locations">Recargar localizaciónes</string>
+    <string name="title_activity_maps">MapsActivity</string>
+</resources>
