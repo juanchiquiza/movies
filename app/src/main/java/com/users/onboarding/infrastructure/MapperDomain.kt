@@ -36,16 +36,31 @@ fun mapToDomainMoviePopular(body: MoviePopularResponse): MoviePopular {
     )
 }
 
-fun MovieResponse.toMovieEntity(): MovieEntity {
+fun Movie.toMovieEntity(): MovieEntity {
     return MovieEntity(
         id = this.id ?: 0,
         title = this.title ?: "",
         overview = this.overview ?: "",
-        posterPath = this.posterPath ?: "",
+        posterPath = this.posterUrl ?: "",
         releaseDate = this.releaseDate ?: "",
     )
 }
 
-fun List<MovieResponse>.toMovieEntityList(): List<MovieEntity> {
+fun List<Movie>.toMovieEntityList(): List<MovieEntity> {
     return this.map { it.toMovieEntity() }
 }
+
+fun MovieEntity.toEntityMovie(): Movie {
+    return Movie(
+        id = this.id,
+        title = this.title,
+        overview = this.overview,
+        posterUrl = this.posterPath,
+        releaseDate = this.releaseDate,
+    )
+}
+
+fun List<MovieEntity>.toEntityMovieList(): List<Movie> {
+    return this.map { it.toEntityMovie() }
+}
+

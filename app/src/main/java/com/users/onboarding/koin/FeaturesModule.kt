@@ -2,6 +2,8 @@ package com.users.onboarding.koin
 
 import com.users.onboarding.domain.usecases.GetMoviesUseCase
 import com.users.onboarding.domain.usecases.GetMoviesUseCaseImpl
+import com.users.onboarding.domain.usecases.MoviesDbUseCase
+import com.users.onboarding.domain.usecases.MoviesDbUseCaseImpl
 import com.users.onboarding.domain.usecases.UploadDocumentsUseCase
 import com.users.onboarding.domain.usecases.UploadDocumentsUseCaseImpl
 import com.users.onboarding.presentation.viewmodel.MovieViewModel
@@ -23,12 +25,18 @@ val useCases = module {
             utilsWithContextRequired = get()
         )
     }
+    factory<MoviesDbUseCase> {
+        MoviesDbUseCaseImpl(
+            repository = get(),
+        )
+    }
 }
 val viewModels = module {
     viewModel {
         MovieViewModel(
             useCase = get(),
             uploadDocumentsUseCase = get(),
+            moviesDbUseCase = get(),
         )
     }
 }

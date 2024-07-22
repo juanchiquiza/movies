@@ -1,14 +1,14 @@
 package com.users.onboarding.domain.model
 
 data class Movie(
-    val id: Int?,
-    val title: String?,
-    val overview: String?,
-    val posterUrl: String?,
-    val backdropUrl: String?,
-    val releaseDate: String?,
-    val voteAverage: Double?,
-    val genres: List<Int>?,
-    val runtime: Int?,
-    val tagline: String?
+    val id: Int? = null,
+    val title: String? = null,
+    val overview: String? = null,
+    val posterUrl: String? = null,
+    val backdropUrl: String? = null,
+    val releaseDate: String? = null,
+    val voteAverage: Double? = null,
+    val genres: List<Int>? = null,
+    val runtime: Int? = null,
+    val tagline: String? = null,
 )

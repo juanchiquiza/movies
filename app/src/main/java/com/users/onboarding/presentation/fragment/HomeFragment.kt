@@ -11,8 +11,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.users.onboarding.R
 import com.users.onboarding.data.server.config.ApiState
+import com.users.onboarding.domain.model.Movie
 import com.users.onboarding.domain.model.MoviePopular
 import com.users.onboarding.domain.usecases.GetMoviesUseCaseResult
+import com.users.onboarding.domain.usecases.MoviesDbUseCaseResult
 import com.users.onboarding.presentation.adapters.MovieAdapter
 import com.users.onboarding.utils.extensions.collectWhenResumed
 import com.users.onboarding.utils.extensions.handleErrorBase
@@ -34,17 +36,34 @@ class HomeFragment : BaseFragment() {
     }
 
     private fun setUpObserver() {
-        viewModel.getMoviesPopular()
+        viewModel.getMoviesPopular(requireContext())
         collectWhenResumed(viewModel.getMoviesPopularData) { state ->
             binding.progressBar.isVisible = state == ApiState.Loading
             when (state) {
 
                 is ApiState.Failure -> handleErrorBase(throwable = state) {
-                    viewModel.getMoviesPopular()
+                    viewModel.getMoviesPopular(requireContext())
                 }
 
                 is ApiState.Success<*> -> {
                     val result = (state.data as GetMoviesUseCaseResult.Success).result
+                    setUpRecycler(result.results)
+                }
+
+                else -> {}
+            }
+        }
+
+        collectWhenResumed(viewModel.moviesDbData) { state ->
+            binding.progressBar.isVisible = state == ApiState.Loading
+            when (state) {
+
+                is ApiState.Failure -> handleErrorBase(throwable = state) {
+                    viewModel.getMoviesPopular(requireContext())
+                }
+
+                is ApiState.Success<*> -> {
+                    val result = (state.data as List<Movie>)
                     setUpRecycler(result)
                 }
 
@@ -53,8 +72,8 @@ class HomeFragment : BaseFragment() {
         }
     }
 
-    private fun setUpRecycler(movie: MoviePopular?) {
-        val adapter = movie?.results?.let {
+    private fun setUpRecycler(results: List<Movie>?) {
+        val adapter = results?.let {
             MovieAdapter(it)
         }
         binding.recyclerView.layoutManager = LinearLayoutManager(context)

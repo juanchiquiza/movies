@@ -1,5 +1,8 @@
 package com.users.onboarding.presentation.viewmodel
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,8 +12,11 @@ import com.users.onboarding.data.server.config.ApiState
 import com.users.onboarding.domain.usecases.GetMoviesUseCase
 import com.users.onboarding.domain.usecases.GetMoviesUseCaseResult
 import com.users.onboarding.domain.usecases.MoviesDbUseCase
+import com.users.onboarding.domain.usecases.MoviesDbUseCaseResult
 import com.users.onboarding.domain.usecases.UploadDocumentsUseCase
 import com.users.onboarding.domain.usecases.UploadDocumentsUseCaseResult
+import com.users.onboarding.infrastructure.toEntityMovieList
+import com.users.onboarding.infrastructure.toMovieEntityList
 import kotlinx.coroutines.launch
 
 class MovieViewModel(
@@ -20,33 +26,54 @@ class MovieViewModel(
 ) : ViewModel() {
 
     val getMoviesPopularData: MutableLiveData<ApiState> = MutableLiveData()
+    val moviesDbData: MutableLiveData<ApiState> = MutableLiveData()
     val getTopRatedData: MutableLiveData<ApiState> = MutableLiveData()
     val attachments = MutableLiveData<List<String>>(emptyList())
     val _uploadFiles: MutableLiveData<ApiState> = MutableLiveData()
 
-    fun getMoviesPopular() = viewModelScope.launch {
+    fun getMoviesPopular(context: Context) = viewModelScope.launch {
         getMoviesPopularData.postValue(ApiState.Loading)
-        when (val result = useCase.invokePopular()) {
-            is GetMoviesUseCaseResult.Error -> {
-                getMoviesPopularData.postValue(ApiState.Failure(Throwable(result.error)))
-            }
+        if(isInternetAvailable(context)) {
+            when (val result = useCase.invokePopular()) {
+                is GetMoviesUseCaseResult.Error -> {
+                    getMoviesPopularData.postValue(ApiState.Failure(Throwable(result.error)))
+                }
 
-            is GetMoviesUseCaseResult.Success -> {
-                getMoviesPopularData.postValue(ApiState.Success(result))
+                is GetMoviesUseCaseResult.Success -> {
+                    saveMovies(result.result.results.toMovieEntityList())
+                    getMoviesPopularData.postValue(ApiState.Success(result))
+                }
             }
+        } else {
+            getMoviesDb()
         }
     }
 
-    fun saveMoviesPopular(list: List<MovieEntity>) = viewModelScope.launch {
-        getMoviesPopularData.postValue(ApiState.Loading)
-        when (val result = moviesDbUseCase..saveMovies(list)) {
-            is GetMoviesUseCaseResult.Error -> {
-                getMoviesPopularData.postValue(ApiState.Failure(Throwable(result.error)))
+    private fun saveMovies(list: List<MovieEntity>) = viewModelScope.launch {
+        moviesDbData.postValue(ApiState.Loading)
+        when (val result = moviesDbUseCase.invoke(list)) {
+            is MoviesDbUseCaseResult.Error -> {
             }
 
-            is GetMoviesUseCaseResult.Success -> {
-                getMoviesPopularData.postValue(ApiState.Success(result))
+            is MoviesDbUseCaseResult.Success -> {
             }
+
+            else -> {}
+        }
+    }
+
+    private fun getMoviesDb() = viewModelScope.launch {
+        moviesDbData.postValue(ApiState.Loading)
+        when (val result = moviesDbUseCase.invokeGetMovies()) {
+            is MoviesDbUseCaseResult.Error -> {
+                moviesDbData.postValue(ApiState.Failure(Throwable(result.error)))
+            }
+
+            is MoviesDbUseCaseResult.SuccessGetMovies -> {
+                moviesDbData.postValue(ApiState.Success(result.resultList.toEntityMovieList()))
+            }
+
+            else -> {}
         }
     }
 
@@ -90,5 +117,16 @@ class MovieViewModel(
 
     fun putImage(list: MutableList<String>) {
         attachments.value = list
+    }
+
+    fun isInternetAvailable(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return when {
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            else -> false
+        }
     }
 }
