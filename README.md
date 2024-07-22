@@ -23,7 +23,6 @@ This app uses https://developer.android.com/jetpack/docs/guide#recommended-app-a
 
 
 # Add video
-
-
+https://github.com/juanchiquiza/movies/blob/main/video.mov
 
 
